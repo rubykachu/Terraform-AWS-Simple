@@ -4,7 +4,7 @@ module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "2.64.0"
 
-  name       = "${var.project_code}-VPC"
+  name       = "VPC-${var.project_code}"
   azs        = var.azs
   create_igw = true
 

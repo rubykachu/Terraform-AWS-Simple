@@ -18,6 +18,13 @@ resource "aws_security_group" "sg_public" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -33,7 +40,7 @@ resource "aws_security_group" "sg_public" {
 }
 
 # SG For WebServer
-resource "aws_security_group" "sg_web_server" {
+resource "aws_security_group" "sg_webserver" {
   name        = "SG-WebServer"
   description = "Security group for web server"
   vpc_id      = module.vpc.vpc_id

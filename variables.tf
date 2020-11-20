@@ -1,4 +1,9 @@
 # Project
+variable "workspaces" {
+  description = "List workspace"
+  type        = list(string)
+}
+
 variable "profile" {
   description = "Profile credentials AWS"
   type        = string
@@ -12,6 +17,12 @@ variable "project" {
 variable "project_code" {
   description = "Code of project"
   type        = string
+}
+
+# EC2
+variable "keypair" {
+  type        = map(string)
+  description = "Name keypair by workspace (environment)"
 }
 
 # VPC
@@ -60,4 +71,31 @@ variable "alb_enable_stickiness" {
 variable "alb_stickiness_duration" {
   description = "Duration stickiness (seconds)"
   type        = number
+}
+
+# Auto Scaling
+variable "asg_ami_id" {
+  type        = string
+  description = "AMI id"
+}
+
+variable "asg_instance_type" {
+  type        = string
+  description = "Instance type"
+}
+
+variable "asg_ebs_root_instance" {
+  type        = list(map(string))
+  description = "EBS block device to attach to the instance"
+  default = [{
+    volume_type           = "gp2"
+    volume_size           = "50"
+    delete_on_termination = true
+    encrypted             = false
+  }]
+}
+
+variable "asg_name_keypair" {
+  type        = string
+  description = "Name of keypair use to Auto Scaling Group"
 }
