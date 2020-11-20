@@ -22,9 +22,10 @@ resource "aws_instance" "nat_and_bastion" {
   ami                         = data.aws_ami.nat_and_bastion_linux.id
   instance_type               = "t2.micro"
   availability_zone           = var.azs[0]
-  source_dest_check           = true
+  source_dest_check           = false # Off Source / destination check
   associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.sg_public.id]
+  subnet_id                   = module.vpc.public_subnets[0]
   key_name                    = var.keypair["name"]
 
   tags = {
