@@ -1,6 +1,6 @@
 .DS_Store
-# assets/*_key.*
-# assets/*_key
+assets/*_key.*
+assets/*_key
 
 # Local .terraform directories
 **/.terraform/*

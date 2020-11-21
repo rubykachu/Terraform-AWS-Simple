@@ -1,3 +1,8 @@
+# Overview
+![image](https://user-images.githubusercontent.com/26104119/99877819-6d155180-2c33-11eb-8cc9-2e161552de02.png)
+
+Build infrastructure AWS Failover and High Availability
+
 # I. Setup môi trường
 
 ## 1. Install Terraform for MacOs
