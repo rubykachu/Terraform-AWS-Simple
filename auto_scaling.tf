@@ -1,9 +1,5 @@
 # Module: https://registry.terraform.io/modules/terraform-aws-modules/autoscaling/aws/latest
 
-locals {
-  name_policy_cpu = "ASGAverageCPUUtilization"
-}
-
 module "asg" {
   source  = "terraform-aws-modules/autoscaling/aws"
   version = "3.7.0"
@@ -51,19 +47,53 @@ module "asg" {
   ]
 }
 
-# Policy scale up
-resource "aws_autoscaling_policy" "ec2_scale_up" {
-  name                      = local.name_policy_cpu
-  autoscaling_group_name    = module.asg.this_autoscaling_group_name
-  adjustment_type           = "ChangeInCapacity"
-  policy_type               = "TargetTrackingScaling"
-  estimated_instance_warmup = 300
+# Ref: https://testable.io/create-an-aws-auto-scaling-group-with-terraform/
 
-  target_tracking_configuration {
-    predefined_metric_specification {
-      predefined_metric_type = local.name_policy_cpu
-    }
+# Policy scale-out (add more instances)
+resource "aws_autoscaling_policy" "scale_out" {
+  name                   = "ScaleOut-MemoryUtilization"
+  autoscaling_group_name = module.asg.this_autoscaling_group_name
+  adjustment_type        = "ChangeInCapacity"
+  scaling_adjustment     = 1
+}
 
-    target_value = 80.0
+# Policy scale-in (run fewer instances)
+resource "aws_autoscaling_policy" "scale_in" {
+  name                   = "ScaleIn-MemoryUtilization"
+  autoscaling_group_name = module.asg.this_autoscaling_group_name
+  adjustment_type        = "ChangeInCapacity"
+  scaling_adjustment     = -1
+}
+
+resource "aws_cloudwatch_metric_alarm" "memory_high" {
+  alarm_name          = "MemoryUtil-High"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "MemoryUtilization"
+  namespace           = "System/Linux"
+  period              = "300"
+  statistic           = "Average"
+  threshold           = "75"
+  alarm_description   = "This metric monitors ec2 memory for high utilization on agent hosts"
+  alarm_actions       = [aws_autoscaling_policy.scale_out.arn]
+  dimensions = {
+    AutoScalingGroupName = module.asg.this_autoscaling_group_name
   }
 }
+
+resource "aws_cloudwatch_metric_alarm" "memory_low" {
+  alarm_name          = "MemoryUtil-Low"
+  comparison_operator = "LessThanOrEqualToThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "MemoryUtilization"
+  namespace           = "System/Linux"
+  period              = "300"
+  statistic           = "Average"
+  threshold           = "20"
+  alarm_description   = "This metric monitors ec2 memory for low utilization on agent hosts"
+  alarm_actions       = [aws_autoscaling_policy.scale_in.arn]
+  dimensions = {
+    AutoScalingGroupName = module.asg.this_autoscaling_group_name
+  }
+}
+
